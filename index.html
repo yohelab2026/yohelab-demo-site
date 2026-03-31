@@ -3,1338 +3,324 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>よへラボ — フリーランスの「めんどくさい」を秒で解決するツール群</title>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Zen+Maru+Gothic:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>無料で今すぐ手取りを計算してみる（2026年版）</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <style>
-:root {
-  --bg: #0a0a0f;
-  --bg-card: #12121a;
-  --bg-card-hover: #1a1a28;
-  --surface: #1e1e2e;
-  --border: #2a2a3e;
-  --text: #e8e6f0;
-  --text-dim: #8b89a0;
-  --text-muted: #5c5a70;
-  --accent: #6ee7b7;
-  --accent-dim: #34d399;
-  --accent-glow: rgba(110, 231, 183, 0.15);
-  --accent2: #fbbf24;
-  --accent3: #f472b6;
-  --danger: #f87171;
-  --font-display: 'Zen Maru Gothic', sans-serif;
-  --font-body: 'Zen Kaku Gothic New', sans-serif;
-  --font-mono: 'IBM Plex Mono', monospace;
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-html { scroll-behavior: smooth; }
-
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-body);
-  line-height: 1.7;
-  overflow-x: hidden;
-}
-
-/* ===== NOISE OVERLAY ===== */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-}
-
-/* ===== LAYOUT ===== */
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-/* ===== HERO ===== */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  position: relative;
-  padding: 120px 0 80px;
-}
-
-.hero::before {
-  content: '';
-  position: absolute;
-  top: -200px;
-  right: -300px;
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(circle, rgba(110,231,183,0.06) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: -100px;
-  left: -200px;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(244,114,182,0.04) 0%, transparent 70%);
-  pointer-events: none;
-}
-
-.hero-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 16px;
-  border: 1px solid var(--border);
-  border-radius: 100px;
-  font-size: 13px;
-  color: var(--accent);
-  font-family: var(--font-mono);
-  letter-spacing: 0.02em;
-  margin-bottom: 32px;
-  background: var(--accent-glow);
-  animation: fadeUp 0.8s ease both;
-}
-
-.hero-badge::before {
-  content: '';
-  width: 6px; height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-  animation: pulse 2s ease infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
-
-.hero h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2.4rem, 5vw, 3.6rem);
-  font-weight: 900;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-  margin-bottom: 24px;
-  animation: fadeUp 0.8s ease 0.1s both;
-}
-
-.hero h1 .highlight {
-  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-sub {
-  font-size: clamp(1rem, 2vw, 1.15rem);
-  color: var(--text-dim);
-  max-width: 600px;
-  margin-bottom: 40px;
-  animation: fadeUp 0.8s ease 0.2s both;
-}
-
-.hero-cta-row {
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-  animation: fadeUp 0.8s ease 0.3s both;
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  background: var(--accent);
-  color: var(--bg);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  border: none;
-  border-radius: 12px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.25s ease;
-  box-shadow: 0 0 30px rgba(110, 231, 183, 0.2);
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 0 50px rgba(110, 231, 183, 0.35);
-}
-
-.btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 32px;
-  background: transparent;
-  color: var(--text);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.25s ease;
-}
-
-.btn-secondary:hover {
-  border-color: var(--text-dim);
-  background: var(--surface);
-}
-
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 14px 24px;
-  background: transparent;
-  color: var(--accent);
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 15px;
-  border: 1px solid rgba(110, 231, 183, 0.28);
-  border-radius: 12px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.25s ease;
-}
-
-.btn-ghost:hover {
-  transform: translateY(-2px);
-  background: rgba(110,231,183,0.08);
-  border-color: var(--accent);
-}
-
-/* ===== SOCIAL PROOF ===== */
-.social-proof {
-  padding: 40px 0;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-}
-
-.proof-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 32px;
-  text-align: center;
-}
-
-.proof-item .num {
-  font-family: var(--font-mono);
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.proof-item .label {
-  font-size: 13px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-/* ===== PAIN SECTION ===== */
-.pain {
-  padding: 100px 0 60px;
-}
-
-.section-label {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--accent);
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-.section-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
-  font-weight: 900;
-  margin-bottom: 48px;
-  line-height: 1.4;
-}
-
-.pain-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 20px;
-}
-
-.pain-card {
-  padding: 28px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  transition: all 0.3s ease;
-}
-
-.pain-card:hover {
-  background: var(--bg-card-hover);
-  border-color: var(--text-muted);
-  transform: translateY(-3px);
-}
-
-.pain-card .icon {
-  font-size: 28px;
-  margin-bottom: 16px;
-}
-
-.pain-card h3 {
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.pain-card p {
-  font-size: 14px;
-  color: var(--text-dim);
-  line-height: 1.7;
-}
-
-/* ===== PRODUCTS ===== */
-.products {
-  padding: 80px 0;
-}
-
-.product-card {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 48px;
-  align-items: center;
-  padding: 60px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.product-card:nth-child(even) {
-  direction: rtl;
-}
-
-.product-card:nth-child(even) > * {
-  direction: ltr;
-}
-
-.product-info .product-tag {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  margin-bottom: 16px;
-}
-
-.tag-best { background: rgba(110,231,183,0.15); color: var(--accent); }
-.tag-popular { background: rgba(251,191,36,0.15); color: var(--accent2); }
-.tag-new { background: rgba(244,114,182,0.15); color: var(--accent3); }
-
-.product-info h3 {
-  font-family: var(--font-display);
-  font-size: clamp(1.3rem, 2.5vw, 1.7rem);
-  font-weight: 900;
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-.product-info .desc {
-  color: var(--text-dim);
-  font-size: 15px;
-  margin-bottom: 20px;
-}
-
-.feature-list {
-  list-style: none;
-  margin-bottom: 28px;
-}
-
-.feature-list li {
-  padding: 6px 0;
-  font-size: 14px;
-  color: var(--text-dim);
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.feature-list li::before {
-  content: '✓';
-  color: var(--accent);
-  font-weight: 700;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.price-row {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.product-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.price {
-  font-family: var(--font-mono);
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.price-note {
-  font-size: 13px;
-  color: var(--text-muted);
-}
-
-/* Product visual / mock */
-.product-visual {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 32px;
-  position: relative;
-  overflow: hidden;
-  min-height: 340px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.product-visual::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 4px;
-  border-radius: 20px 20px 0 0;
-}
-
-.pv-1::before { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
-.pv-2::before { background: linear-gradient(90deg, var(--accent2), var(--accent3)); }
-.pv-3::before { background: linear-gradient(90deg, var(--accent3), #818cf8); }
-.pv-4::before { background: linear-gradient(90deg, #818cf8, var(--accent)); }
-.pv-5::before { background: linear-gradient(90deg, var(--accent), var(--accent3)); }
-
-.mock-bar {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 20px;
-}
-
-.mock-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  background: var(--border);
-}
-
-.mock-dot:nth-child(1) { background: #f87171; }
-.mock-dot:nth-child(2) { background: #fbbf24; }
-.mock-dot:nth-child(3) { background: #34d399; }
-
-.mock-content {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  color: var(--text-dim);
-  line-height: 2;
-}
-
-.mock-content .line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
-  border-radius: 6px;
-  margin-bottom: 4px;
-}
-
-.mock-content .line-highlight {
-  background: var(--accent-glow);
-  color: var(--accent);
-}
-
-.mock-content .line-warn {
-  background: rgba(251,191,36,0.1);
-  color: var(--accent2);
-}
-
-.mock-content .line-danger {
-  background: rgba(248,113,113,0.1);
-  color: var(--danger);
-}
-
-.mock-result {
-  margin-top: 16px;
-  padding: 16px;
-  background: var(--surface);
-  border-radius: 12px;
-  border: 1px solid var(--border);
-}
-
-.mock-result-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 0;
-  font-size: 13px;
-  font-family: var(--font-mono);
-  border-bottom: 1px solid var(--border);
-}
-
-.mock-result-row:last-child {
-  border-bottom: none;
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 15px;
-  padding-top: 10px;
-}
-
-.mock-chart {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 120px;
-  margin-top: 16px;
-  padding: 0 12px;
-}
-
-.mock-chart-bar {
-  flex: 1;
-  border-radius: 6px 6px 0 0;
-  position: relative;
-  transition: all 0.3s ease;
-  cursor: default;
-}
-
-.mock-chart-bar:hover { opacity: 0.8; }
-
-.mock-chart-bar .bar-label {
-  position: absolute;
-  bottom: -22px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.mock-chart-bar .bar-val {
-  position: absolute;
-  top: -20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 10px;
-  color: var(--text-dim);
-  font-family: var(--font-mono);
-}
-
-/* ===== BUNDLE ===== */
-.bundle {
-  padding: 80px 0;
-}
-
-.bundle-box {
-  background: linear-gradient(135deg, rgba(110,231,183,0.05), rgba(251,191,36,0.05));
-  border: 2px solid var(--accent);
-  border-radius: 24px;
-  padding: 48px;
-  position: relative;
-  overflow: hidden;
-}
-
-.bundle-box::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -30%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(110,231,183,0.08), transparent 70%);
-  pointer-events: none;
-}
-
-.bundle-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-bottom: 32px;
-}
-
-.bundle-title {
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 900;
-}
-
-.bundle-price-area {
-  text-align: right;
-}
-
-.bundle-original {
-  font-size: 14px;
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
-
-.bundle-price {
-  font-family: var(--font-mono);
-  font-size: 2.5rem;
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.bundle-save {
-  display: inline-block;
-  padding: 4px 12px;
-  background: rgba(248,113,113,0.15);
-  color: var(--danger);
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  font-family: var(--font-mono);
-  margin-top: 4px;
-}
-
-.bundle-items {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 16px;
-  margin-bottom: 32px;
-}
-
-.bundle-item {
-  padding: 20px;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.bundle-item .bi-icon {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  font-size: 20px;
-  flex-shrink: 0;
-}
-
-.bi-1 { background: rgba(110,231,183,0.12); }
-.bi-2 { background: rgba(251,191,36,0.12); }
-.bi-3 { background: rgba(244,114,182,0.12); }
-.bi-4 { background: rgba(129,140,248,0.12); }
-.bi-5 { background: rgba(110,231,183,0.12); }
-
-.bundle-item h4 {
-  font-size: 14px;
-  font-weight: 700;
-  font-family: var(--font-display);
-}
-
-.bundle-item .bi-price {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-.bundle-cta {
-  text-align: center;
-}
-
-.coming-soon {
-  padding: 70px 0;
-}
-
-.coming-box {
-  padding: 32px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-}
-
-.coming-box p {
-  color: var(--text-dim);
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-/* ===== GUARANTEE ===== */
-.guarantee {
-  padding: 60px 0;
-}
-
-.guarantee-box {
-  padding: 40px;
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-.guarantee-icon {
-  font-size: 40px;
-  flex-shrink: 0;
-}
-
-.guarantee-box h3 {
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.guarantee-box p {
-  color: var(--text-dim);
-  font-size: 14px;
-}
-
-/* ===== FAQ ===== */
-.faq {
-  padding: 80px 0;
-}
-
-.faq-item {
-  border-bottom: 1px solid var(--border);
-  padding: 24px 0;
-}
-
-.faq-q {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 16px;
-}
-
-.faq-q::after {
-  content: '+';
-  font-family: var(--font-mono);
-  font-size: 1.3rem;
-  color: var(--text-muted);
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
-}
-
-.faq-item.open .faq-q::after {
-  transform: rotate(45deg);
-  color: var(--accent);
-}
-
-.faq-a {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease, padding 0.3s ease;
-  color: var(--text-dim);
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.faq-item.open .faq-a {
-  max-height: 300px;
-  padding-top: 16px;
-}
-
-/* ===== FOOTER ===== */
-.site-footer {
-  padding: 60px 0 40px;
-  border-top: 1px solid var(--border);
-  text-align: center;
-}
-
-.footer-logo {
-  font-family: var(--font-display);
-  font-size: 1.3rem;
-  font-weight: 900;
-  margin-bottom: 12px;
-}
-
-.footer-links {
-  display: flex;
-  justify-content: center;
-  gap: 24px;
-  margin-bottom: 20px;
-}
-
-.footer-links a {
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 13px;
-  transition: color 0.2s;
-}
-
-.footer-links a:hover { color: var(--text); }
-
-.footer-copy {
-  font-size: 12px;
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-/* ===== ANIMATIONS ===== */
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.reveal {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.7s ease;
-}
-
-.reveal.visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* ===== IFRAME DEMO ===== */
-.iframe-demo {
-  padding: 24px 0 12px;
-}
-
-.iframe-demo-box {
-  margin-top: 20px;
-  border-radius: 24px;
-  border: 1px solid rgba(110, 231, 183, 0.12);
-  background: linear-gradient(180deg, rgba(18,18,26,0.92), rgba(10,10,15,0.98));
-  padding: 20px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
-}
-
-.iframe-demo-frame {
-  width: 100%;
-  height: 920px;
-  border: none;
-  border-radius: 20px;
-  background: #111111;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .iframe-demo-box { padding: 12px; }
-  .iframe-demo-frame { height: 980px; }
-  .product-card {
-    grid-template-columns: 1fr;
-    gap: 32px;
-  }
-  .product-card:nth-child(even) { direction: ltr; }
-  .product-links {
-    flex-direction: column;
-  }
-  .product-links a {
-    width: 100%;
-    justify-content: center;
-  }
-  .bundle-box { padding: 28px; }
-  .bundle-header { flex-direction: column; }
-  .bundle-price-area { text-align: left; }
-  .guarantee-box { flex-direction: column; }
-  .hero { padding: 80px 0 60px; min-height: auto; }
-}
+:root{--bg:#111111;--surface:#171717;--surface-2:#101010;--line:#1f3b31;--text:#f5f7f6;--muted:#9eb5ac;--accent:#00ff9d;--accent-2:#00b8ff;--accent-3:#ffb800;--danger:#ff7b7b}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;min-width:320px;background:radial-gradient(circle at top left, rgba(0,255,157,.12), transparent 28%),radial-gradient(circle at bottom right, rgba(0,184,255,.08), transparent 22%),#111111;color:var(--text);font-family:'Zen Kaku Gothic New',sans-serif}.wrap{max-width:1240px;margin:0 auto;padding:24px}.hero{border:1px solid #1f3b31;border-radius:34px;background:linear-gradient(135deg, rgba(0,255,157,.16), rgba(0,0,0,.05) 45%, rgba(0,184,255,.12));padding:32px;box-shadow:0 28px 90px rgba(0,0,0,.32)}.eyebrow{display:inline-flex;align-items:center;gap:10px;border-radius:999px;padding:9px 14px;background:rgba(0,255,157,.08);border:1px solid rgba(0,255,157,.2);font:800 12px/1 'Outfit',sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--accent)}.eyebrow::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--accent)}h1{margin:18px 0 14px;font-family:'Outfit','Zen Kaku Gothic New',sans-serif;font-size:clamp(2rem,4.4vw,3.8rem);line-height:1.05;letter-spacing:-.04em}.hero p{max-width:820px;color:#c3d6cf;line-height:1.9}.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;margin-top:22px}.hero-card,.hero-note{border:1px solid rgba(0,255,157,.14);border-radius:24px;background:rgba(0,0,0,.22);padding:18px}.hero-card strong{color:var(--accent)}.layout{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;margin-top:24px}.panel{border:1px solid #1a2d25;border-radius:30px;background:rgba(23,23,23,.94);padding:24px;box-shadow:0 18px 54px rgba(0,0,0,.22)}.panel h2,.panel h3{margin:0 0 8px;font-size:1.25rem}.sub{margin:0 0 18px;color:var(--muted);font-size:.95rem;line-height:1.8}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}label{display:flex;flex-direction:column;gap:8px;font-size:.92rem;font-weight:700;color:#daf0e7}.hint{font-size:.77rem;line-height:1.6;color:#7ea295;font-weight:500}input,select{width:100%;border:1px solid #224236;border-radius:18px;padding:14px 16px;background:#111111;color:#fff;font:500 16px/1.4 inherit;outline:none}input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(0,255,157,.1)}.toggle{width:100%;border:1px solid #224236;border-radius:18px;padding:14px 16px;background:#111111;color:#d9efe7;font:800 15px/1.4 inherit;text-align:left;cursor:pointer}.toggle.active{background:var(--accent);border-color:var(--accent);color:#111111}.toggle.active.secondary{background:var(--accent-2);border-color:var(--accent-2);color:#07131a}.summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.summary-card{border-radius:24px;background:#171717;border:1px solid #1f3b31;padding:22px}.summary-card .k{font:800 11px/1 'Outfit',sans-serif;color:#8edcbc;letter-spacing:.24em;text-transform:uppercase}.summary-card .v{margin-top:12px;font:900 clamp(1.8rem,3vw,2.6rem)/1.1 'Outfit','Zen Kaku Gothic New',sans-serif}.chart-box{height:330px}.badge{display:inline-flex;align-items:center;border-radius:999px;padding:9px 14px;font-size:.78rem;font-weight:900;background:rgba(255,184,0,.1);color:#ffcf57;border:1px solid rgba(255,184,0,.24)}table{width:100%;border-collapse:collapse;font-size:.95rem}thead{background:#141414}th,td{padding:14px 16px;border-bottom:1px solid #1b2e26}th{text-align:left;color:#90a79e;font-size:.84rem}td:last-child,th:last-child{text-align:right}tr.emphasis td{font-weight:900}.cta-stack{display:grid;gap:12px;margin-top:18px}.btn,.btn-outline,.btn-dark{display:inline-flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;border:none;border-radius:18px;cursor:pointer;font:900 16px/1.2 inherit;padding:16px 20px;transition:transform .2s ease, filter .2s ease}.btn:hover,.btn-outline:hover,.btn-dark:hover{transform:translateY(-1px);filter:brightness(.98)}.btn{background:var(--accent);color:#062516;box-shadow:0 18px 40px rgba(0,255,157,.18)}.btn-dark{background:#0f172a;color:#fff;box-shadow:0 18px 40px rgba(15,23,42,.24)}.btn-outline{background:transparent;color:var(--accent);border:1px solid rgba(0,255,157,.3)}.error{margin-top:14px;border-radius:18px;padding:12px 14px;background:rgba(255,123,123,.12);border:1px solid rgba(255,123,123,.28);color:#ffd1d1;font-size:.88rem}.note-list{display:grid;gap:12px;margin-top:18px}.note-item{border-radius:18px;background:#121212;padding:14px 16px;border:1px solid #1d3028}.note-item .k{font:800 11px/1 'Outfit',sans-serif;letter-spacing:.22em;color:#7fe6b8;text-transform:uppercase}.note-item .v{margin-top:10px;font-weight:800;font-size:1.08rem}.link-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}.link-row a{text-decoration:none;color:#a5bbb3;font-size:.78rem;border:1px solid #223930;padding:10px 14px;border-radius:999px;background:#141414}.floating-actions{display:grid;gap:12px;position:fixed;right:20px;bottom:20px;width:min(380px,calc(100vw - 32px));z-index:20}.footer-space{height:120px}@media (max-width:980px){.hero-grid,.layout,.form-grid,.summary{grid-template-columns:1fr}.floating-actions{position:static;width:100%;margin-top:18px}.chart-box{height:300px}.footer-space{height:24px}}
 </style>
 </head>
 <body>
-
-<!-- ===== HERO ===== -->
-<section class="hero">
-  <div class="container">
-    <div class="hero-badge">
-      <span>2026年4月 — 5ツール同時リリース</span>
+<div class="wrap">
+  <section class="hero">
+    <div class="eyebrow">無料で試してみる</div>
+    <h1>無料で今すぐ手取りを計算してみる（2026年版）</h1>
+    <p>よへラボのランディングページ上でそのまま試せる無料デモ版。売上と経費を入れるだけで、税金と保険を差し引いたざっくり手取り感がその場で見える。</p>
+    <div class="hero-grid">
+      <div class="hero-card"><strong>2割特例は2026年分対応。</strong> 3割特例は比較用の参考モードとして残してある。</div>
+      <div class="hero-note">よへラボのダークモード配色に揃えた直開き版。ダブルクリックでそのまま使える。</div>
     </div>
-    <h1>
-      フリーランスの<br>
-      <span class="highlight">「めんどくさい」を秒で解決</span>する<br>
-      マイクロツール群
-    </h1>
-    <p class="hero-sub">
-      見積もりの金額に迷う。契約書が怖い。特商法って何を書けばいいの？——<br>
-      よへラボは、個人で稼ぐ人の「地味だけど致命的な困りごと」を、<br>
-      ブラウザだけで・買い切りで・今すぐ解決します。
-    </p>
-    <div class="hero-cta-row">
-      <a href="#products" class="btn-primary">ツールを見る ↓</a>
-      <a href="#bundle" class="btn-secondary">全部セットで買う → おトク</a>
-    </div>
-  </div>
-</section>
+  </section>
 
-<!-- ===== SOCIAL PROOF ===== -->
-<section class="social-proof">
-  <div class="container">
-    <div class="proof-grid">
-      <div class="proof-item">
-        <div class="num">5</div>
-        <div class="label">ツールをラインナップ</div>
-      </div>
-      <div class="proof-item">
-        <div class="num">¥0</div>
-        <div class="label">月額費用・サーバー代</div>
-      </div>
-      <div class="proof-item">
-        <div class="num">30秒</div>
-        <div class="label">で結果が出る操作性</div>
-      </div>
-      <div class="proof-item">
-        <div class="num">買い切り</div>
-        <div class="label">サブスクなし。一度買えば永久</div>
-      </div>
-    </div>
-  </div>
-</section>
+  <div class="layout">
+    <section class="panel">
+      <h2>入力フォーム</h2>
+      <p class="sub">扶養家族数は一般扶養親族として計算。住民税と国保は概算だから、最終確認は自治体の制度で見て。</p>
 
-<!-- ===== PAIN ===== -->
-<section class="pain">
-  <div class="container">
-    <div class="section-label">PROBLEMS</div>
-    <h2 class="section-title reveal">こんな経験、ありませんか？</h2>
-    <div class="pain-grid">
-      <div class="pain-card reveal">
-        <div class="icon">💸</div>
-        <h3>手取りが思ったより少ない</h3>
-        <p>年収600万のはずが、税金・保険・年金を引くと手元に残るのは…？フリーランスの「見えない出費」を把握できていない。</p>
-      </div>
-      <div class="pain-card reveal">
-        <div class="icon">📋</div>
-        <h3>特商法の表記、何を書けばいいかわからない</h3>
-        <p>自サイトでデジタル商品を売りたいけど、法律違反が怖い。テンプレをコピペしたけど、自分のビジネスに合ってるのか不安。</p>
-      </div>
-      <div class="pain-card reveal">
-        <div class="icon">🤝</div>
-        <h3>契約書なしで仕事を受けてしまった</h3>
-        <p>納品後に「やっぱり修正して」が無限に来る。著作権は？支払い遅延は？口約束で痛い目に遭ったことがある。</p>
-      </div>
-      <div class="pain-card reveal">
-        <div class="icon">💰</div>
-        <h3>自分のスキル、いくらで売ればいいの？</h3>
-        <p>安すぎて消耗、高すぎて受注ゼロ。相場が分からないまま「とりあえず○万円で…」と値段を決めていませんか。</p>
-      </div>
-      <div class="pain-card reveal">
-        <div class="icon">⚠️</div>
-        <h3>広告表現、法律に引っかかってない？</h3>
-        <p>「効果抜群」「必ず痩せる」——その一言が薬機法・景表法違反に。知らなかったでは済まされないリスク。</p>
-      </div>
-      <div class="pain-card reveal">
-        <div class="icon">⏰</div>
-        <h3>事務作業に時間を取られすぎ</h3>
-        <p>本来の制作時間を、見積もり・書類作成・法律調べで潰している。稼ぐための作業に集中できない。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== 無料デモ埋め込み（区別を明確にしたバージョン） ===== -->
-<section class="iframe-demo">
-  <div class="container">
-    <div style="margin: 80px 0 60px;">
-      <div style="text-align:center; margin-bottom:20px;">
-        <span style="background:#1a1a28; color:#6ee7b7; padding:8px 20px; border-radius:9999px; font-size:14px; font-weight:700; letter-spacing:1.5px; box-shadow:0 0 15px rgba(110,231,183,0.3);">
-          FREE DEMO
-        </span>
+      <div class="form-grid">
+        <label>年間売上（税込）
+          <input id="annualSales" type="number" value="10000000">
+          <span class="hint">税込の年間売上を入力</span>
+        </label>
+        <label>必要経費
+          <input id="expenses" type="number" value="2000000">
+          <span class="hint">税込支出として扱う</span>
+        </label>
+        <label>青色申告 65万円控除
+          <button id="useBlueReturn" class="toggle active secondary" type="button">適用する</button>
+        </label>
+        <label>扶養家族数
+          <input id="dependents" type="number" value="0">
+        </label>
+        <label>iDeCo掛金（年）
+          <input id="ideco" type="number" value="240000">
+        </label>
+        <label>小規模企業共済掛金（年）
+          <input id="mutualAid" type="number" value="0">
+        </label>
+        <label>インボイス登録
+          <button id="isInvoiceRegistered" class="toggle active" type="button">登録済み</button>
+          <span class="hint">未登録なら消費税納付は 0 円</span>
+        </label>
+        <label>消費税方式
+          <select id="consumptionTaxMethod"></select>
+          <span class="hint" style="font-weight:900;color:#ffd166">2割特例は2026年分対応。3割特例は比較用の参考モード。</span>
+        </label>
+        <label>業種
+          <select id="industryKey"></select>
+          <span class="hint" id="industryHint"></span>
+        </label>
       </div>
 
-      <h2 style="text-align:center; margin-bottom:28px; color:#6ee7b7; font-size:1.9rem;">
-        無料で今すぐ手取りを計算してみる（2026年版）
-      </h2>
+      <div id="inlineError" class="error" hidden></div>
+    </section>
 
-      <iframe
-        src="https://yohelab-demo.netlify.app/"
-        width="100%"
-        height="960"
-        style="border: 4px solid #2a2a3e; border-radius: 28px; box-shadow: 0 25px 60px rgba(110,231,183,0.25); overflow: hidden;"
-        title="フリーランス手取りシミュレーター 無料デモ 2026年版"
-        loading="lazy"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen
-      ></iframe>
-    </div>
-  </div>
-</section>
+    <section>
+      <div class="summary">
+        <div class="summary-card">
+          <div class="k">最終手取り額</div>
+          <div class="v" id="netTakeHome">-</div>
+        </div>
+        <div class="summary-card">
+          <div class="k">実効負担率</div>
+          <div class="v" id="effectiveRate">-</div>
+        </div>
+      </div>
 
-<!-- ===== PRODUCTS ===== -->
-<div id="pricing"></div>
-<section class="products" id="products">
-  <div class="container">
-    <div class="section-label">TOOLS</div>
-    <h2 class="section-title reveal">よへラボのツール一覧</h2>
+      <div class="panel" style="margin-top:18px">
+        <h3>無料デモ結果</h3>
+        <p class="sub">税金・社会保険・将来積立・手取りのバランスをその場で確認できる。</p>
+        <div class="chart-box"><canvas id="breakdownChart"></canvas></div>
+      </div>
 
-    <!-- Product 1 -->
-    <div class="product-card reveal">
-      <div class="product-info">
-        <span class="product-tag tag-best">BEST SELLER</span>
-        <h3>フリーランス手取りシミュレーター</h3>
-        <p class="desc">年収を入れるだけ。所得税・住民税・国保・年金・消費税・青色控除・iDeCo・小規模企業共済——全部まとめて「本当の手取り」を即計算。</p>
-        <ul class="feature-list">
-          <li>所得税（累進5%〜45%）＋復興特別所得税を完全計算</li>
-          <li>国民健康保険は市区町村の料率で概算</li>
-          <li>インボイス登録者の消費税（2割特例/簡易課税対応）</li>
-          <li>青色申告65万控除、iDeCo、小規模企業共済の節税シミュレーション</li>
-          <li>円グラフ＋内訳表でひと目で把握</li>
-        </ul>
-        <div class="price-row">
-          <span class="price">¥1,980</span>
-          <span class="price-note">買い切り・税込</span>
-        </div>
-        <div class="product-links">
-          <a href="./apps-static/freelance-net-simulator-2026/index.html" class="btn-primary">フル機能版を開く →</a>
-          <a href="./apps-static/yohelab-takehome-demo/index.html" class="btn-ghost">無料デモ版を試す →</a>
-        </div>
-      </div>
-      <div class="product-visual pv-1">
-        <div class="mock-bar"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
-        <div class="mock-content">
-          <div class="line">📊 年収 800万円 の場合…</div>
-        </div>
-        <div class="mock-result">
-          <div class="mock-result-row"><span>売上</span><span>¥8,000,000</span></div>
-          <div class="mock-result-row"><span>経費</span><span style="color:var(--text-muted)">-¥1,200,000</span></div>
-          <div class="mock-result-row"><span>所得税＋復興税</span><span style="color:var(--danger)">-¥764,500</span></div>
-          <div class="mock-result-row"><span>住民税</span><span style="color:var(--danger)">-¥530,000</span></div>
-          <div class="mock-result-row"><span>国保＋年金</span><span style="color:var(--danger)">-¥1,023,600</span></div>
-          <div class="mock-result-row"><span>消費税（2割特例）</span><span style="color:var(--danger)">-¥145,454</span></div>
-          <div class="mock-result-row"><span>手取り</span><span>¥4,336,446</span></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product 2 -->
-    <div class="product-card reveal">
-      <div class="product-info">
-        <span class="product-tag tag-popular">POPULAR</span>
-        <h3>特商法・プラポリ・利用規約<br>一括ジェネレーター</h3>
-        <p class="desc">ビジネス類型を選んで情報を入力するだけ。特定商取引法表記・プライバシーポリシー・利用規約の3文書をまとめて自動生成。</p>
-        <ul class="feature-list">
-          <li>デジタル商品/サブスク/コーチング/物販の4類型対応</li>
-          <li>特商法は動作環境・返品特約・最終確認画面まで網羅</li>
-          <li>HTML/Markdown/PDFの3形式で出力</li>
-          <li>消費者庁ガイドラインに準拠したチェックリスト付き</li>
-        </ul>
-        <div class="price-row">
-          <span class="price">¥2,980</span>
-          <span class="price-note">買い切り・税込</span>
-        </div>
-        <a href="#coming-soon" class="btn-primary">このツールは準備中 →</a>
-      </div>
-      <div class="product-visual pv-2">
-        <div class="mock-bar"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
-        <div class="mock-content">
-          <div class="line">📝 生成された特商法表記:</div>
-          <div class="line line-highlight">✓ 販売事業者名</div>
-          <div class="line line-highlight">✓ 所在地</div>
-          <div class="line line-highlight">✓ 販売価格（税込表記）</div>
-          <div class="line line-highlight">✓ 支払方法・支払時期</div>
-          <div class="line line-highlight">✓ 商品引渡し時期</div>
-          <div class="line line-highlight">✓ 返品・キャンセルポリシー</div>
-          <div class="line line-highlight">✓ 動作環境（デジタル商品）</div>
-          <div class="line line-warn">⚡ 3文書を一括生成完了</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product 3 -->
-    <div class="product-card reveal">
-      <div class="product-info">
-        <span class="product-tag tag-new">NEW</span>
-        <h3>薬機法NGワードチェッカー Lite</h3>
-        <p class="desc">広告文・LP・商品説明を貼り付けるだけ。500以上のNGパターンで薬機法・景表法のリスク箇所を即座に検出＆代替表現を提案。</p>
-        <ul class="feature-list">
-          <li>医薬品的効能効果の標榜 / 誇大表現 / 要注意ワードを3段階で検出</li>
-          <li>NGワード辞書500パターン以上を内蔵</li>
-          <li>各問題箇所に代替表現の提案付き</li>
-          <li>リスクスコアを数値表示（SNSシェア用に最適）</li>
-        </ul>
-        <div class="price-row">
-          <span class="price">¥3,980</span>
-          <span class="price-note">買い切り・税込</span>
-        </div>
-        <a href="#coming-soon" class="btn-primary">このツールは準備中 →</a>
-      </div>
-      <div class="product-visual pv-3">
-        <div class="mock-bar"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
-        <div class="mock-content">
-          <div class="line">🔍 チェック結果:</div>
-          <div class="line line-danger">❌「確実に痩せる」→ 医薬品的効能効果</div>
-          <div class="line line-danger">❌「シミが消える」→ 化粧品の効能範囲外</div>
-          <div class="line line-warn">⚠️「業界No.1」→ 根拠が必要（景表法）</div>
-          <div class="line line-warn">⚠️「驚きの効果」→ 誇大表現の可能性</div>
-          <div class="line line-highlight">💡 提案:「確実に痩せる」→「理想の体型を目指す方へ」</div>
-        </div>
-        <div class="mock-result" style="text-align:center; margin-top:16px;">
-          <div style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">リスクスコア</div>
-          <div style="font-size:28px; font-weight:700; color:var(--danger); font-family:var(--font-mono);">72 / 100</div>
-          <div style="font-size:11px; color:var(--danger);">要修正</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product 4 -->
-    <div class="product-card reveal">
-      <div class="product-info">
-        <span class="product-tag tag-popular">POPULAR</span>
-        <h3>クリエイター値付けシミュレーター</h3>
-        <p class="desc">職種×スキルレベル×作業時間で、あなたの制作物の適正価格を算出。安売り地獄からの脱出をサポート。</p>
-        <ul class="feature-list">
-          <li>デザイン/イラスト/ライティング/動画/Web制作の5職種対応</li>
-          <li>時間単価×工数＋経費＋利益率で算出</li>
-          <li>日本の市場相場レンジ（下限〜中央値〜上限）を表示</li>
-          <li>「この金額で提案する」用の見積もり文テンプレ付き</li>
-        </ul>
-        <div class="price-row">
-          <span class="price">¥1,480</span>
-          <span class="price-note">買い切り・税込</span>
-        </div>
-        <a href="#coming-soon" class="btn-primary">このツールは準備中 →</a>
-      </div>
-      <div class="product-visual pv-4">
-        <div class="mock-bar"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
-        <div class="mock-content">
-          <div class="line">🎨 イラスト制作の適正価格:</div>
-        </div>
-        <div class="mock-chart">
-          <div class="mock-chart-bar" style="height:30%; background:var(--text-muted);">
-            <span class="bar-val">¥15,000</span>
-            <span class="bar-label">安売り</span>
-          </div>
-          <div class="mock-chart-bar" style="height:55%; background:var(--accent2);">
-            <span class="bar-val">¥35,000</span>
-            <span class="bar-label">相場下限</span>
-          </div>
-          <div class="mock-chart-bar" style="height:80%; background:var(--accent);">
-            <span class="bar-val">¥55,000</span>
-            <span class="bar-label">適正価格</span>
-          </div>
-          <div class="mock-chart-bar" style="height:100%; background:var(--accent3);">
-            <span class="bar-val">¥80,000</span>
-            <span class="bar-label">上限</span>
-          </div>
-        </div>
-        <div class="mock-result" style="margin-top:36px; text-align:center;">
-          <div style="font-size:11px; color:var(--text-muted);">あなたの適正価格</div>
-          <div style="font-size:28px; font-weight:700; color:var(--accent); font-family:var(--font-mono);">¥55,000</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Product 5 -->
-    <div class="product-card reveal">
-      <div class="product-info">
-        <span class="product-tag tag-new">NEW</span>
-        <h3>フリーランス契約書ジェネレーター</h3>
-        <p class="desc">質問に答えるだけで業務委託契約書が完成。2024年11月施行のフリーランス保護法に対応。</p>
-        <ul class="feature-list">
-          <li>デザイン/開発/ライティング/コンサルの4業種テンプレート</li>
-          <li>著作権帰属・秘密保持・競業避止を選択式で設定</li>
-          <li>源泉徴収・支払サイトの条件も自動反映</li>
-          <li>PDF＋テキストで出力、そのまま印刷・メール送付可</li>
-        </ul>
-        <div class="price-row">
-          <span class="price">¥2,980</span>
-          <span class="price-note">買い切り・税込</span>
-        </div>
-        <a href="#coming-soon" class="btn-primary">このツールは準備中 →</a>
-      </div>
-      <div class="product-visual pv-5">
-        <div class="mock-bar"><div class="mock-dot"></div><div class="mock-dot"></div><div class="mock-dot"></div></div>
-        <div class="mock-content">
-          <div class="line">📄 業務委託契約書</div>
-          <div class="line line-highlight">第1条（業務内容）Webデザイン制作</div>
-          <div class="line line-highlight">第2条（納品物）デザインデータ一式</div>
-          <div class="line line-highlight">第3条（報酬）¥550,000（税込）</div>
-          <div class="line line-highlight">第4条（支払）納品翌月末日</div>
-          <div class="line line-highlight">第5条（著作権）納品・入金後に委託者に移転</div>
-          <div class="line line-highlight">第6条（秘密保持）あり</div>
-          <div class="line line-warn">⚡ フリーランス保護法対応済み</div>
-        </div>
-      </div>
-    </div>
-
-  </div>
-</section>
-
-<!-- ===== BUNDLE ===== -->
-<section class="bundle" id="bundle">
-  <div class="container">
-    <div class="bundle-box reveal">
-      <div class="bundle-header">
-        <div>
-          <div class="section-label">BEST VALUE</div>
-          <h2 class="bundle-title">全5ツール まとめてパック</h2>
-          <p style="color:var(--text-dim); font-size:14px; margin-top:8px;">単品で全部買うと ¥13,400。まとめて買えば ¥4,980。<br>一度の決済で、フリーランスに必要な武器が全部そろう。</p>
-        </div>
-        <div class="bundle-price-area">
-          <div class="bundle-original">通常 ¥13,400</div>
-          <div class="bundle-price">¥4,980</div>
-          <div class="bundle-save">63% OFF</div>
-        </div>
-      </div>
-      <div class="bundle-items">
-        <a href="./apps-static/freelance-net-simulator-2026/index.html" class="bundle-item" style="text-decoration:none; color:inherit;">
-          <div class="bi-icon bi-1">💸</div>
+      <div class="panel" style="margin-top:18px">
+        <div style="display:flex;justify-content:space-between;gap:14px;align-items:flex-end;flex-wrap:wrap">
           <div>
-            <h4>手取りシミュレーター</h4>
-            <div class="bi-price">単品 ¥1,980</div>
+            <h3>ざっくり内訳</h3>
+            <p class="sub" style="margin-bottom:0">無料版でも主要な差し引きは全部見える。</p>
           </div>
-        </a>
-        <a href="./apps-static/yohelab-takehome-demo/index.html" class="bundle-item" style="text-decoration:none; color:inherit;">
-          <div class="bi-icon bi-2">📋</div>
-          <div>
-            <h4>手取りシミュレーター無料デモ</h4>
-            <div class="bi-price">無料でお試し</div>
+          <div class="badge" id="consumptionTaxNote">-</div>
+        </div>
+
+        <div style="margin-top:18px;overflow:auto;border:1px solid #1b2e26;border-radius:24px;background:#111111">
+          <table>
+            <thead>
+              <tr><th>項目</th><th>金額</th></tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+
+        <div class="note-list">
+          <div class="note-item">
+            <div class="k">基礎控除</div>
+            <div class="v" id="basicDeduction">-</div>
           </div>
-        </a>
-        <div class="bundle-item">
-          <div class="bi-icon bi-3">📋</div>
-          <div>
-            <h4>特商法・プラポリ ジェネレーター</h4>
-            <div class="bi-price">単品 ¥2,980</div>
+          <div class="note-item">
+            <div class="k">青色申告控除</div>
+            <div class="v" id="blueDeduction">-</div>
           </div>
         </div>
-        <div class="bundle-item">
-          <div class="bi-icon bi-4">⚠️</div>
-          <div>
-            <h4>薬機法NGワードチェッカー</h4>
-            <div class="bi-price">単品 ¥3,980</div>
-          </div>
-        </div>
-        <div class="bundle-item">
-          <div class="bi-icon bi-5">💰</div>
-          <div>
-            <h4>値付けシミュレーター</h4>
-            <div class="bi-price">単品 ¥1,480</div>
-          </div>
-        </div>
-        <div class="bundle-item">
-          <div class="bi-icon bi-1">🤝</div>
-          <div>
-            <h4>契約書ジェネレーター</h4>
-            <div class="bi-price">単品 ¥2,980</div>
-          </div>
+
+        <div class="cta-stack">
+          <a class="btn-outline" href="#pricing">フル機能版を購入する（¥1,980）</a>
         </div>
       </div>
-      <div class="bundle-cta">
-        <a href="#coming-soon" class="btn-primary" style="font-size:17px; padding: 18px 48px;">全5ツールまとめ買いは準備中</a>
+
+      <div class="panel" style="margin-top:18px" id="pricing">
+        <h3>このデモで見える範囲</h3>
+        <p class="sub">所得税・復興特別所得税・住民税・国民年金・国保概算・個人事業税・消費税までまとめて概算。より販売ページ向けに使うならフル版の導線もこのまま活かせる。</p>
+        <div class="link-row">
+          <a href="https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1000.htm" target="_blank" rel="noreferrer">国税庁: 所得税のしくみ</a>
+          <a href="https://www.nta.go.jp/taxes/tetsuzuki/shinsei/annai/gensen/pdf/2024bun_06.pdf" target="_blank" rel="noreferrer">国税庁: 基礎控除関係</a>
+          <a href="https://www.tax.metro.tokyo.lg.jp/book/guidebook/guidebook2024/guidebook_4.pdf" target="_blank" rel="noreferrer">東京都主税局: 個人事業税</a>
+        </div>
       </div>
-    </div>
+    </section>
   </div>
-</section>
 
-<!-- ===== COMING SOON ===== -->
-<section class="coming-soon" id="coming-soon">
-  <div class="container">
-    <div class="coming-box reveal">
-      <div class="section-label">WAITING LIST</div>
-      <h2 class="section-title" style="margin-bottom:0;">未公開ツールはまだ準備中</h2>
-      <p>今すぐ動くのは「フリーランス手取りシミュレーター」のフル機能版と無料デモ版。ほかの購入ボタンや法務ページ系の導線は、公開準備ができるまでこの案内に集約してある。</p>
-    </div>
+  <div class="floating-actions">
+    <a class="btn-dark" id="shareButton" href="#" target="_blank" rel="noreferrer">自分の手取りをXに投稿する</a>
+    <button class="btn" id="pdfButton" type="button">計算結果をPDFでダウンロード（無料）</button>
   </div>
-</section>
-
-<!-- ===== GUARANTEE ===== -->
-<section class="guarantee">
-  <div class="container">
-    <div class="guarantee-box reveal">
-      <div class="guarantee-icon">🛡️</div>
-      <div>
-        <h3>7日間の返金保証</h3>
-        <p>購入後7日以内であれば、理由を問わず全額返金いたします。ツールが合わなかった場合、メール一本でOKです。安心してお試しください。返金はStripe経由で3〜5営業日以内に処理されます。</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== FAQ ===== -->
-<section class="faq">
-  <div class="container">
-    <div class="section-label">FAQ</div>
-    <h2 class="section-title reveal">よくある質問</h2>
-
-    <div class="faq-item">
-      <div class="faq-q">サブスク（月額課金）ですか？</div>
-      <div class="faq-a">いいえ、すべて買い切りです。一度の支払いで、アップデートも含めて永久にご利用いただけます。月額費用は一切発生しません。</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">ツールはどこで使えますか？ インストールは必要ですか？</div>
-      <div class="faq-a">すべてブラウザで動作します。PC・スマホ・タブレット対応。インストール不要で、購入後すぐにURLにアクセスしてお使いいただけます。データはあなたのブラウザ内に保存され、外部サーバーには一切送信されません。</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">特商法ジェネレーターや契約書ジェネレーターは法的に有効ですか？</div>
-      <div class="faq-a">本ツールは消費者庁や国税庁の公式ガイドラインに準拠したテンプレートを提供する「生成支援ツール」です。法的助言ではありません。重要な契約や法的判断については、専門家（弁護士・行政書士）への相談をお勧めします。</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">薬機法チェッカーの精度はどのくらいですか？</div>
-      <div class="faq-a">500以上のNGパターンをカバーしていますが、すべての違反表現を検出できるわけではありません。最終的な判断は薬機法に詳しい専門家にご確認ください。本ツールは「明らかなNGを事前に防ぐ」ための一次スクリーニングとしてお使いいただくことを想定しています。</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">領収書は発行されますか？</div>
-      <div class="faq-a">はい。Stripeの決済完了メールが領収書として利用可能です。また、別途正式な領収書が必要な場合はメールにてご連絡ください。</div>
-    </div>
-    <div class="faq-item">
-      <div class="faq-q">バンドルパックと単品、どちらがおすすめですか？</div>
-      <div class="faq-a">フリーランスとして本格的に活動するなら、バンドルパック（¥4,980）が断然おトクです。単品合計¥13,400の63%OFFで、独立に必要な書類・計算・チェック機能がすべて揃います。</div>
-    </div>
-  </div>
-</section>
-
-<!-- ===== FOOTER ===== -->
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-logo">よへラボ</div>
-    <div class="footer-links">
-      <a href="#coming-soon">特定商取引法に基づく表記</a>
-      <a href="#coming-soon">プライバシーポリシー</a>
-      <a href="#coming-soon">利用規約</a>
-      <a href="#coming-soon">お問い合わせ</a>
-      <a href="#coming-soon">X (@yohelab)</a>
-    </div>
-    <div class="footer-copy">© 2026 よへラボ — All rights reserved.</div>
-  </div>
-</footer>
+  <div class="footer-space"></div>
+</div>
 
 <script>
-// Scroll reveal
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      entry.target.classList.add('visible');
-    }
+const INDUSTRY_OPTIONS=[{key:'itConsulting',label:'IT・コンサル・受託開発',businessTaxRate:.05,deemedPurchaseRate:.5},{key:'designer',label:'デザイナー・イラストレーター',businessTaxRate:.03,deemedPurchaseRate:.5},{key:'writer',label:'ライター・翻訳・編集',businessTaxRate:.03,deemedPurchaseRate:.5},{key:'lecturer',label:'講師・インストラクター',businessTaxRate:.03,deemedPurchaseRate:.5},{key:'retail',label:'小売',businessTaxRate:.05,deemedPurchaseRate:.8},{key:'wholesale',label:'卸売',businessTaxRate:.05,deemedPurchaseRate:.9},{key:'manufacturing',label:'製造',businessTaxRate:.05,deemedPurchaseRate:.7},{key:'restaurant',label:'飲食',businessTaxRate:.05,deemedPurchaseRate:.6},{key:'realEstate',label:'不動産賃貸',businessTaxRate:.05,deemedPurchaseRate:.4}];
+const CONSUMPTION_TAX_OPTIONS=[{key:'twoTenths',label:'2割特例'},{key:'threeTenths',label:'3割特例（参考比較）'},{key:'standard',label:'通常課税'},{key:'simplified',label:'簡易課税'}];
+const NATIONAL_PENSION=215040,RESIDENT_TAX_FLAT=5000,NATIONAL_HEALTH_RATE=.1,BUSINESS_OWNER_DEDUCTION=2900000,INCOME_TAX_BRACKETS=[{upper:1950000,rate:.05,deduction:0},{upper:3300000,rate:.1,deduction:97500},{upper:6950000,rate:.2,deduction:427500},{upper:9000000,rate:.23,deduction:636000},{upper:18000000,rate:.33,deduction:1536000},{upper:40000000,rate:.4,deduction:2796000},{upper:Infinity,rate:.45,deduction:4796000}];
+const currency=new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0});
+const formState={useBlueReturn:true,isInvoiceRegistered:true};
+const fields={annualSales:document.getElementById('annualSales'),expenses:document.getElementById('expenses'),dependents:document.getElementById('dependents'),ideco:document.getElementById('ideco'),mutualAid:document.getElementById('mutualAid'),useBlueReturn:document.getElementById('useBlueReturn'),isInvoiceRegistered:document.getElementById('isInvoiceRegistered'),consumptionTaxMethod:document.getElementById('consumptionTaxMethod'),industryKey:document.getElementById('industryKey')};
+const rowsEl=document.getElementById('rows');
+const inlineError=document.getElementById('inlineError');
+let chart;
+
+const formatCurrency=v=>currency.format(Math.round(v));
+const parseNumber=v=>{const n=Number(String(v??'').replaceAll(',','').trim());return Number.isFinite(n)?n:NaN;};
+
+function getBasicDeduction(income){if(income<=1320000)return 950000;if(income<=3360000)return 880000;if(income<=4890000)return 680000;if(income<=6550000)return 630000;if(income<=23500000)return 580000;if(income<=24000000)return 480000;if(income<=24500000)return 320000;if(income<=25000000)return 160000;return 0;}
+function incomeTaxFor(taxableIncome){const bracket=INCOME_TAX_BRACKETS.find((entry)=>taxableIncome<=entry.upper);return bracket?Math.max(0,taxableIncome*bracket.rate-bracket.deduction):0;}
+
+function calcConsumptionTax({sales,expenses,industry,isInvoiceRegistered,method}){
+  if(!isInvoiceRegistered)return{amount:0,label:'免税事業者想定',note:'インボイス未登録のため消費税は0円'};
+  const outputTax=sales/1.1*.1;
+  const inputTax=expenses/1.1*.1;
+  if(method==='twoTenths')return{amount:Math.round(.2*outputTax),label:'2割特例',note:'2割特例で納付税額を算出。'};
+  if(method==='threeTenths')return{amount:Math.round(.3*outputTax),label:'3割特例',note:'3割特例は2026年版では比較用の参考計算。'};
+  if(method==='simplified')return{amount:Math.round(outputTax*(1-industry.deemedPurchaseRate)),label:'簡易課税',note:`${industry.label} のみなし仕入率 ${Math.round(industry.deemedPurchaseRate*100)}% を使用。`};
+  return{amount:Math.round(Math.max(0,outputTax-inputTax)),label:'通常課税',note:'通常課税は税込経費から仕入税額控除を概算。'};
+}
+
+function calculate(){
+  const input={annualSales:parseNumber(fields.annualSales.value),expenses:parseNumber(fields.expenses.value),dependents:parseNumber(fields.dependents.value),ideco:parseNumber(fields.ideco.value),mutualAid:parseNumber(fields.mutualAid.value)};
+  if(Object.values(input).some((value)=>Number.isNaN(value))||input.annualSales<=0||input.expenses<0||input.ideco<0||input.mutualAid<0||input.dependents<0||input.dependents%1!==0){
+    inlineError.hidden=false;
+    inlineError.textContent='入力値を見直して。売上は1円以上、扶養家族数は整数で入れて。';
+    return null;
+  }
+  inlineError.hidden=true;
+  const industry=INDUSTRY_OPTIONS.find((entry)=>entry.key===fields.industryKey.value)||INDUSTRY_OPTIONS[0];
+  const businessIncome=Math.max(0,input.annualSales-input.expenses);
+  const blueDeduction=formState.useBlueReturn?Math.min(650000,businessIncome):0;
+  const basicDeduction=getBasicDeduction(businessIncome);
+  const dependentIncomeDeduction=Math.floor(input.dependents)*380000;
+  const dependentResidentDeduction=Math.floor(input.dependents)*330000;
+
+  let healthInsurance=0;
+  for(let i=0;i<3;i+=1){
+    const base=Math.max(0,businessIncome-blueDeduction-input.ideco-input.mutualAid-NATIONAL_PENSION-healthInsurance-basicDeduction-dependentResidentDeduction);
+    healthInsurance=Math.round(base*NATIONAL_HEALTH_RATE);
+  }
+
+  const incomeTaxable=Math.max(0,businessIncome-blueDeduction-input.ideco-input.mutualAid-NATIONAL_PENSION-healthInsurance-basicDeduction-dependentIncomeDeduction);
+  const residentTaxable=Math.max(0,businessIncome-blueDeduction-input.ideco-input.mutualAid-NATIONAL_PENSION-healthInsurance-basicDeduction-dependentResidentDeduction);
+  const incomeTax=Math.round(incomeTaxFor(incomeTaxable));
+  const reconstructionTax=Math.round(incomeTax*.021);
+  const residentTax=Math.round(residentTaxable*.1)+RESIDENT_TAX_FLAT;
+  const businessTaxBase=Math.max(0,businessIncome-blueDeduction-BUSINESS_OWNER_DEDUCTION);
+  const businessTax=Math.round(businessTaxBase*industry.businessTaxRate);
+  const consumptionTaxMeta=calcConsumptionTax({sales:input.annualSales,expenses:input.expenses,industry,isInvoiceRegistered:formState.isInvoiceRegistered,method:fields.consumptionTaxMethod.value});
+  const totalTaxes=incomeTax+reconstructionTax+residentTax+businessTax+consumptionTaxMeta.amount;
+  const totalInsurance=NATIONAL_PENSION+healthInsurance;
+  const totalSavings=input.ideco+input.mutualAid;
+  const netTakeHome=Math.max(0,Math.round(input.annualSales-input.expenses-totalTaxes-totalInsurance-totalSavings));
+  const effectiveBurdenRate=input.annualSales===0?0:(input.annualSales-netTakeHome-input.expenses)/input.annualSales*100;
+
+  return{
+    industry,
+    basicDeduction,
+    blueDeduction,
+    consumptionTaxMeta,
+    netTakeHome,
+    effectiveBurdenRate,
+    taxBreakdown:{totalTaxes},
+    insuranceBreakdown:{totalInsurance},
+    savingsBreakdown:{totalSavings},
+    rows:[
+      ['年間売上（税込）',input.annualSales,false],
+      ['必要経費',-input.expenses,false],
+      ['売上総利益',businessIncome,true],
+      ['青色申告控除',-blueDeduction,false],
+      ['基礎控除',-basicDeduction,false],
+      ['扶養控除（所得税ベース）',-dependentIncomeDeduction,false],
+      ['iDeCo掛金',-input.ideco,false],
+      ['小規模企業共済掛金',-input.mutualAid,false],
+      ['国民年金',-NATIONAL_PENSION,false],
+      ['国民健康保険（概算）',-healthInsurance,false],
+      ['所得税',-incomeTax,false],
+      ['復興特別所得税',-reconstructionTax,false],
+      ['住民税',-residentTax,false],
+      ['個人事業税',-businessTax,false],
+      ['消費税',-consumptionTaxMeta.amount,false],
+      ['最終手取り額',netTakeHome,true]
+    ]
+  };
+}
+
+function updateChart(result){
+  const data=[result.taxBreakdown.totalTaxes,result.insuranceBreakdown.totalInsurance,result.savingsBreakdown.totalSavings,result.netTakeHome];
+  if(chart){
+    chart.data.datasets[0].data=data;
+    chart.update();
+    return;
+  }
+  chart=new Chart(document.getElementById('breakdownChart'),{
+    type:'doughnut',
+    data:{labels:['税金','社会保険','将来積立','最終手取り'],datasets:[{data,backgroundColor:['#00ff9d','#00b8ff','#ffb800','#f5f7f6'],borderColor:'#111111',borderWidth:4,hoverOffset:8}]},
+    options:{maintainAspectRatio:false,cutout:'63%',plugins:{legend:{position:'bottom',labels:{color:'#d9efe7',boxWidth:14,boxHeight:14,usePointStyle:true,padding:18}}}}
   });
-}, { threshold: 0.1 });
+}
 
-reveals.forEach(el => observer.observe(el));
+async function loadFontBase64(){
+  const response=await fetch('https://cdn.jsdelivr.net/gh/google/fonts@main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf');
+  if(!response.ok)throw new Error('PDF用フォントの読み込みに失敗した。');
+  const bytes=new Uint8Array(await response.arrayBuffer());
+  let binary='';
+  const chunk=32768;
+  for(let i=0;i<bytes.length;i+=chunk)binary+=String.fromCharCode(...bytes.subarray(i,i+chunk));
+  return btoa(binary);
+}
 
-// FAQ toggle
-document.querySelectorAll('.faq-q').forEach(q => {
-  q.addEventListener('click', () => {
-    const item = q.parentElement;
-    item.classList.toggle('open');
-  });
-});
+async function downloadPdf(result){
+  const { jsPDF }=window.jspdf;
+  const pdf=new jsPDF({format:'a4',unit:'mm'});
+  const font=await loadFontBase64();
+  pdf.addFileToVFS('NotoSansJP.ttf',font);
+  pdf.addFont('NotoSansJP.ttf','NotoSansJP','normal');
+  pdf.setFont('NotoSansJP');
+  pdf.setFillColor('#111111');
+  pdf.roundedRect(14,14,182,34,6,6,'F');
+  pdf.setTextColor('#ffffff');
+  pdf.setFontSize(19);
+  pdf.text('無料で今すぐ手取りを計算してみる（2026年版）',20,27);
+  pdf.setFontSize(10.5);
+  pdf.text('よへラボ 無料デモ版 / 概算シミュレーション結果',20,35);
+  pdf.text(`作成日時: ${new Date().toLocaleString('ja-JP')}`,20,41);
+  pdf.setFillColor('#062516');
+  pdf.roundedRect(14,54,86,28,5,5,'F');
+  pdf.setTextColor('#ffffff');
+  pdf.setFontSize(10);
+  pdf.text('最終手取り額',20,64);
+  pdf.setFontSize(22);
+  pdf.text(formatCurrency(result.netTakeHome),20,75);
+  pdf.setFillColor('#0f172a');
+  pdf.roundedRect(110,54,86,28,5,5,'F');
+  pdf.setFontSize(10);
+  pdf.text('実効負担率',116,64);
+  pdf.setFontSize(22);
+  pdf.text(`${result.effectiveBurdenRate.toFixed(1)}%`,116,75);
+  let y=94;
+  pdf.setTextColor('#111111');
+  pdf.setFontSize(12);
+  pdf.text('内訳',20,y);
+  y+=8;
+  pdf.setFontSize(10.5);
+  result.rows.forEach((row)=>{pdf.text(row[0],22,y);pdf.text(formatCurrency(row[1]),188,y,{align:'right'});y+=7;});
+  pdf.save('yohelab-free-demo-2026.pdf');
+}
 
+function render(){
+  const result=calculate();
+  if(!result)return;
+  document.getElementById('industryHint').textContent=`個人事業税率 ${Math.round(result.industry.businessTaxRate*100)}% / 簡易課税みなし仕入率 ${Math.round(result.industry.deemedPurchaseRate*100)}%`;
+  document.getElementById('netTakeHome').textContent=formatCurrency(result.netTakeHome);
+  document.getElementById('effectiveRate').textContent=`${result.effectiveBurdenRate.toFixed(1)}%`;
+  document.getElementById('consumptionTaxNote').textContent=result.consumptionTaxMeta.note;
+  document.getElementById('basicDeduction').textContent=formatCurrency(result.basicDeduction);
+  document.getElementById('blueDeduction').textContent=formatCurrency(result.blueDeduction);
+  rowsEl.innerHTML=result.rows.map((row)=>`<tr class="${row[2]?'emphasis':''}"><td>${row[0]}</td><td>${formatCurrency(row[1])}</td></tr>`).join('');
+  document.getElementById('shareButton').href=`https://x.com/intent/tweet?text=${encodeURIComponent(`無料で今すぐ手取りを計算してみたら、最終手取り額は ${formatCurrency(result.netTakeHome)} だった。`)}`;
+  document.getElementById('pdfButton').onclick=()=>downloadPdf(result).catch((error)=>{inlineError.hidden=false;inlineError.textContent=error.message||'PDFの出力に失敗した。';});
+  updateChart(result);
+}
+
+function populate(){
+  fields.consumptionTaxMethod.innerHTML=CONSUMPTION_TAX_OPTIONS.map((option)=>`<option value="${option.key}">${option.label}</option>`).join('');
+  fields.industryKey.innerHTML=INDUSTRY_OPTIONS.map((industry)=>`<option value="${industry.key}">${industry.label}</option>`).join('');
+  fields.industryKey.value='itConsulting';
+  fields.consumptionTaxMethod.value='twoTenths';
+}
+
+fields.useBlueReturn.addEventListener('click',()=>{formState.useBlueReturn=!formState.useBlueReturn;fields.useBlueReturn.classList.toggle('active',formState.useBlueReturn);fields.useBlueReturn.textContent=formState.useBlueReturn?'適用する':'適用しない';render();});
+fields.isInvoiceRegistered.addEventListener('click',()=>{formState.isInvoiceRegistered=!formState.isInvoiceRegistered;fields.isInvoiceRegistered.classList.toggle('active',formState.isInvoiceRegistered);fields.isInvoiceRegistered.textContent=formState.isInvoiceRegistered?'登録済み':'未登録';fields.consumptionTaxMethod.disabled=!formState.isInvoiceRegistered;render();});
+Object.values(fields).forEach((field)=>{if(field.tagName==='INPUT'||field.tagName==='SELECT'){field.addEventListener('input',render);field.addEventListener('change',render);}});
+populate();
+render();
 </script>
-
 </body>
 </html>
