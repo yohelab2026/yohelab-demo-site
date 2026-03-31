@@ -1,5 +1,5 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "ALLOW-FROM https://yohelab.netlify.app/"
-    Content-Security-Policy = "frame-ancestors 'self' https://yohelab.netlify.app/"
+    Content-Security-Policy = "frame-ancestors *"
+    Access-Control-Allow-Origin = "*"
