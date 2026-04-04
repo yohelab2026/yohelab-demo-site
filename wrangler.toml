@@ -1,0 +1,13 @@
+name = "yohelab-demo"
+type = "javascript"
+main = "src/index.js"
+compatibility_date = "2024-04-01"
+
+[env.production]
+routes = [
+  { pattern = "yohelab-demo.pages.dev", zone_name = "pages.dev" }
+]
+
+[build]
+command = ""
+cwd = ""
