@@ -1,0 +1,9 @@
+# Cloudflare Pages Build Configuration
+# For static sites, we don't need a build command
+
+[build]
+command = "echo 'Static site - no build needed'"
+publish = "."
+
+[build.environment]
+NODE_VERSION = "22"
