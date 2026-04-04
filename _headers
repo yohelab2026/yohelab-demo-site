@@ -1,3 +1,4 @@
 /*
-  Content-Security-Policy: frame-ancestors *
-  Access-Control-Allow-Origin: *
+  Content-Security-Policy: frame-ancestors 'self' https://yohelab.pages.dev
+  Access-Control-Allow-Origin: https://yohelab.pages.dev
+  X-Frame-Options: ALLOWALL
